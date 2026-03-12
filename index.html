@@ -1,1 +1,366 @@
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EID MUBARAK :: Root Access Granted</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#000;overflow:hidden;height:100vh;font-family:'Courier New',monospace}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+@keyframes termFade{to{opacity:0;pointer-events:none}}
+@keyframes fadeInUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+
+/* ── Terminal ── */
+#terminal{
+  position:fixed;inset:0;background:#0a0a0a;z-index:100;
+  display:flex;flex-direction:column;padding:clamp(14px,3vw,36px);
+}
+.tbar{display:flex;align-items:center;gap:8px;margin-bottom:16px}
+.tdot{width:12px;height:12px;border-radius:50%}
+.ttitle{color:#555;font-size:12px;margin-left:8px;letter-spacing:1px}
+.scanlines{
+  position:absolute;inset:0;pointer-events:none;z-index:10;
+  background:repeating-linear-gradient(to bottom,transparent 0px,transparent 2px,rgba(0,255,0,.025) 2px,rgba(0,255,0,.025) 4px);
+}
+#tbody{flex:1;overflow-y:auto;overflow-x:hidden;scroll-behavior:smooth}
+.tline{
+  font-family:'Courier New',monospace;
+  font-size:clamp(11px,1.8vw,15px);
+  line-height:1.75;white-space:pre;min-height:1.75em;
+}
+.tcursor{
+  display:inline-block;width:9px;height:1em;
+  background:#0f0;vertical-align:bottom;
+  animation:blink 1s step-end infinite;
+}
+
+/* ── Main Screen ── */
+#mainscreen{
+  position:fixed;inset:0;display:none;
+  justify-content:center;align-items:center;z-index:2;
+}
+#matrix-canvas{position:fixed;inset:0;z-index:0}
+.scan2{
+  position:fixed;inset:0;z-index:1;pointer-events:none;
+  background:repeating-linear-gradient(to bottom,transparent 0px,transparent 2px,rgba(0,255,0,.03) 2px,rgba(0,255,0,.03) 4px);
+}
+.eid-wrap{position:relative;z-index:2;text-align:center;pointer-events:none}
+#fuzzy-canvas{cursor:crosshair;pointer-events:all;display:block;margin:0 auto}
+.subtext{
+  font-family:'Courier New',monospace;
+  font-size:clamp(.8rem,2.2vw,1.3rem);
+  color:#0f0;opacity:.85;letter-spacing:2px;margin-top:8px;
+  animation:fadeInUp 1.2s ease forwards;
+}
+.hint{
+  margin-top:28px;font-family:'Courier New',monospace;
+  font-size:clamp(9px,1.3vw,12px);color:#0a6a0a;letter-spacing:2px;
+  animation:fadeInUp 2s ease forwards;
+}
+</style>
+</head>
+<body>
+
+<!-- ══ PHASE 1: Terminal ══ -->
+<div id="terminal">
+  <div class="tbar">
+    <div class="tdot" style="background:#ff5f57"></div>
+    <div class="tdot" style="background:#febc2e"></div>
+    <div class="tdot" style="background:#28c840"></div>
+    <span class="ttitle">root@kali: ~</span>
+  </div>
+  <div class="scanlines"></div>
+  <div id="tbody"></div>
+</div>
+
+<!-- ══ PHASE 2: Matrix + FuzzyText ══ -->
+<div id="mainscreen">
+  <canvas id="matrix-canvas"></canvas>
+  <div class="scan2"></div>
+  <div class="eid-wrap">
+    <canvas id="fuzzy-canvas"></canvas>
+    <div class="subtext">
+      <span style="color:#0af">&gt;</span>
+      <span style="color:#5fff5f"> status</span><span style="color:#fff">: </span>
+      <span style="color:#febc2e">"Blessed &amp; Forgiven"</span>
+      <span class="tcursor" style="margin-left:6px"></span>
+    </div>
+    <div class="hint">// hover to intensify &nbsp;·&nbsp; click to spike</div>
+  </div>
+</div>
+
+<script>
+// ════════════════════════════════════════════
+//  TERMINAL SCRIPT
+// ════════════════════════════════════════════
+const SCRIPT = [
+  {type:'out', text:'Last login: Fri Mar 13 00:00:01 2026 from 192.168.0.1', color:'#0a6a0a', delay:400},
+  {type:'blank', delay:250},
+  {type:'cmd',  text:'uname -a', delay:600},
+  {type:'out',  text:'Linux kali 6.1.0-kali9-amd64 #1 SMP PREEMPT Debian GNU/Linux', color:'#0a6a0a', delay:250},
+  {type:'cmd',  text:'whoami', delay:550},
+  {type:'out',  text:'root', color:'#5fff5f', delay:300},
+  {type:'cmd',  text:'echo "checking spiritual status..."', delay:600},
+  {type:'out',  text:'checking spiritual status...', color:'#0ff', delay:180},
+  {type:'out',  text:'[✓] Fasting   ........... COMPLETE', color:'#5fff5f', delay:110},
+  {type:'out',  text:'[✓] Prayers   ........... ACCEPTED', color:'#5fff5f', delay:110},
+  {type:'out',  text:'[✓] Zakat     ........... PAID',     color:'#5fff5f', delay:110},
+  {type:'out',  text:'[✓] Laylatul Qadr ........ GRANTED', color:'#5fff5f', delay:320},
+  {type:'cmd',  text:'sudo Eid Mubarak', delay:750},
+  {type:'pw',   delay:1200},
+  {type:'out',  text:'root privilege confirmed.', color:'#5fff5f', delay:180},
+  {type:'prog', delay:550},
+  {type:'out',  text:'', delay:80},
+  {type:'out',  text:'  ╔═══════════════════════════════════╗', color:'#5fff5f', delay:55},
+  {type:'out',  text:'  ║       EID MUBARAK  —  1446 AH     ║', color:'#5fff5f', delay:55},
+  {type:'out',  text:'  ║   May Allah accept your ibadah    ║', color:'#ccc',    delay:55},
+  {type:'out',  text:'  ╚═══════════════════════════════════╝', color:'#5fff5f', delay:380},
+  {type:'out',  text:'', delay:80},
+  {type:'out',  text:'Launching EidOS v1446.0 ...', color:'#febc2e', delay:850},
+  {type:'launch'}
+];
+
+const tbody = document.getElementById('tbody');
+let si = 0;
+
+function prompt() {
+  return '<span style="color:#5fff5f">root</span>'
+       + '<span style="color:#0f0">@</span>'
+       + '<span style="color:#0af">kali</span>'
+       + '<span style="color:#0f0">:</span>'
+       + '<span style="color:#febc2e">~</span>'
+       + '<span style="color:#fff"> # </span>';
+}
+
+function addLine(html, color) {
+  const d = document.createElement('div');
+  d.className = 'tline';
+  if (color) d.style.color = color;
+  d.innerHTML = html;
+  tbody.appendChild(d);
+  tbody.scrollTop = tbody.scrollHeight;
+  return d;
+}
+
+function runScript() {
+  if (si >= SCRIPT.length) return;
+  const item = SCRIPT[si++];
+
+  if (item.type === 'launch') { setTimeout(launchMain, 700); return; }
+
+  if (item.type === 'blank')  { addLine(''); setTimeout(runScript, item.delay); return; }
+
+  if (item.type === 'out')    { addLine(item.text, item.color); setTimeout(runScript, item.delay); return; }
+
+  if (item.type === 'cmd') {
+    const line = addLine(prompt(), '#0f0');
+    const cur = document.createElement('span');
+    cur.className = 'tcursor';
+    line.appendChild(cur);
+    let i = 0;
+    const iv = setInterval(() => {
+      cur.insertAdjacentText('beforebegin', item.text[i++]);
+      if (i >= item.text.length) { clearInterval(iv); cur.remove(); setTimeout(runScript, 200); }
+    }, 55 + Math.random() * 20);
+    return;
+  }
+
+  if (item.type === 'pw') {
+    const line = addLine('<span style="color:#febc2e">[sudo] password for root: </span>', '');
+    let d = 0;
+    const iv = setInterval(() => {
+      line.innerHTML += '<span style="color:#0f0">•</span>';
+      tbody.scrollTop = tbody.scrollHeight;
+      if (++d >= 12) { clearInterval(iv); setTimeout(runScript, 300); }
+    }, 80);
+    return;
+  }
+
+  if (item.type === 'prog') {
+    const line = addLine('', '');
+    let v = 0;
+    const iv = setInterval(() => {
+      v = Math.min(v + 4, 100);
+      const filled = Math.floor(v / 10);
+      const bar = '█'.repeat(filled) + '░'.repeat(10 - filled);
+      const col = v >= 100 ? '#5fff5f' : '#febc2e';
+      line.innerHTML = `<span style="color:#5fff5f">[${bar}] ${v}%  — </span><span style="color:${col}">${v >= 100 ? 'ACCESS GRANTED' : 'authenticating...'}</span>`;
+      tbody.scrollTop = tbody.scrollHeight;
+      if (v >= 100) { clearInterval(iv); setTimeout(runScript, item.delay); }
+    }, 18);
+    return;
+  }
+}
+
+setTimeout(runScript, 300);
+
+// ════════════════════════════════════════════
+//  LAUNCH → MATRIX + FUZZY TEXT
+// ════════════════════════════════════════════
+function launchMain() {
+  const term = document.getElementById('terminal');
+  term.style.animation = 'termFade .9s forwards';
+  const ms = document.getElementById('mainscreen');
+  ms.style.display = 'flex';
+  startMatrix();
+  startFuzzy();
+  setTimeout(() => term.remove(), 950);
+}
+
+// ────────────────────────────────────────────
+//  Matrix Rain
+// ────────────────────────────────────────────
+function startMatrix() {
+  const canvas = document.getElementById('matrix-canvas');
+  const ctx = canvas.getContext('2d');
+  const chars = '01アイウエオカキクケコ日月火水木金土ラリルレロ';
+  const fs = 15;
+  let drops = [];
+
+  function resize() {
+    canvas.width  = window.innerWidth;
+    canvas.height = window.innerHeight;
+    drops = Array.from({length: Math.floor(canvas.width / fs)}, () => Math.random() * -80);
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  setInterval(() => {
+    ctx.fillStyle = 'rgba(0,0,0,.05)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    drops.forEach((y, i) => {
+      const ch = chars[Math.floor(Math.random() * chars.length)];
+      ctx.fillStyle = i % 9 === 0 ? '#afffaf' : '#0f0';
+      ctx.font = fs + 'px monospace';
+      ctx.fillText(ch, i * fs, y * fs);
+      if (y * fs > canvas.height && Math.random() > .975) drops[i] = 0;
+      drops[i]++;
+    });
+  }, 50);
+}
+
+// ────────────────────────────────────────────
+//  FuzzyText  (Vanilla JS port)
+// ────────────────────────────────────────────
+function startFuzzy() {
+  const TEXT         = 'EID MUBARAK';
+  const FONT_WEIGHT  = 900;
+  const FONT_FAMILY  = "'Courier New', Courier, monospace";
+  const COLOR        = '#0f0';
+  const BASE_INT     = 0.22;
+  const HOVER_INT    = 0.65;
+  const FUZZ         = 35;
+  const FPS          = 60;
+  const GLITCH_EVERY = 2800;   // ms between glitches
+  const GLITCH_DUR   = 180;    // ms glitch lasts
+  const TRANS_DUR    = 300;    // ms intensity transition
+
+  const canvas = document.getElementById('fuzzy-canvas');
+  const ctx    = canvas.getContext('2d');
+
+  // Compute responsive font size (same as CSS clamp(3rem,10vw,9rem))
+  function getFontSize() {
+    const vw = window.innerWidth;
+    const rem = parseFloat(getComputedStyle(document.documentElement).fontSize);
+    const clamped = Math.min(Math.max(3 * rem, 0.10 * vw), 9 * rem);
+    return Math.floor(clamped);
+  }
+
+  let animId, glitchT, glitchEndT;
+  let isHovering = false, isGlitching = false, isClicking = false;
+  let curInt = BASE_INT, tgtInt = BASE_INT, lastFrame = 0;
+  const frameDur = 1000 / FPS;
+
+  function build() {
+    if (animId) cancelAnimationFrame(animId);
+    clearTimeout(glitchT); clearTimeout(glitchEndT);
+
+    const fontSize = getFontSize();
+    const fontStr  = `${FONT_WEIGHT} ${fontSize}px ${FONT_FAMILY}`;
+
+    // Offscreen render
+    const off = document.createElement('canvas');
+    const offCtx = off.getContext('2d');
+    offCtx.font = fontStr;
+    offCtx.textBaseline = 'alphabetic';
+
+    const m       = offCtx.measureText(TEXT);
+    const ascent  = m.actualBoundingBoxAscent  ?? fontSize;
+    const descent = m.actualBoundingBoxDescent ?? fontSize * 0.2;
+    const aLeft   = m.actualBoundingBoxLeft    ?? 0;
+    const aRight  = m.actualBoundingBoxRight   ?? m.width;
+    const tW      = Math.ceil(aLeft + aRight);
+    const tH      = Math.ceil(ascent + descent);
+    const xBuf    = 10;
+
+    off.width  = tW + xBuf;
+    off.height = tH;
+    offCtx.font = fontStr;
+    offCtx.textBaseline = 'alphabetic';
+    offCtx.fillStyle = COLOR;
+    offCtx.fillText(TEXT, xBuf / 2 - aLeft, ascent);
+
+    const hMargin = FUZZ + 20;
+    canvas.width  = off.width  + hMargin * 2;
+    canvas.height = tH + 0;   // no vertical fuzz for now
+    ctx.setTransform(1,0,0,1,0,0);
+    ctx.translate(hMargin, 0);
+
+    // Interactive bounds
+    const iLeft   = hMargin + xBuf / 2;
+    const iRight  = iLeft + tW;
+    const iTop    = 0;
+    const iBottom = tH;
+
+    curInt = BASE_INT; tgtInt = BASE_INT;
+
+    function glitchLoop() {
+      glitchT = setTimeout(() => {
+        isGlitching = true;
+        glitchEndT = setTimeout(() => { isGlitching = false; glitchLoop(); }, GLITCH_DUR);
+      }, GLITCH_EVERY);
+    }
+    glitchLoop();
+
+    function draw(ts) {
+      if (ts - lastFrame < frameDur) { animId = requestAnimationFrame(draw); return; }
+      lastFrame = ts;
+
+      ctx.clearRect(-FUZZ - 20, -FUZZ - 10, off.width + 2*(FUZZ+20), tH + 2*(FUZZ+10));
+
+      tgtInt = (isClicking || isGlitching) ? 1 : isHovering ? HOVER_INT : BASE_INT;
+      const step = 1 / (TRANS_DUR / frameDur);
+      if      (curInt < tgtInt) curInt = Math.min(curInt + step, tgtInt);
+      else if (curInt > tgtInt) curInt = Math.max(curInt - step, tgtInt);
+
+      for (let j = 0; j < tH; j++) {
+        const dx = Math.floor(curInt * (Math.random() - .5) * FUZZ);
+        ctx.drawImage(off, 0, j, off.width, 1, dx, j, off.width, 1);
+      }
+      animId = requestAnimationFrame(draw);
+    }
+    animId = requestAnimationFrame(draw);
+
+    // Events
+    canvas.onmousemove = e => {
+      const r = canvas.getBoundingClientRect();
+      const x = e.clientX - r.left - hMargin + hMargin; // adjust for ctx translation
+      const cx = e.clientX - r.left;
+      const cy = e.clientY - r.top;
+      isHovering = (cx >= iLeft && cx <= iRight && cy >= iTop && cy <= iBottom);
+    };
+    canvas.onmouseleave = () => { isHovering = false; };
+    canvas.onclick = () => {
+      isClicking = true;
+      setTimeout(() => { isClicking = false; }, 150);
+    };
+  }
+
+  build();
+  window.addEventListener('resize', () => { build(); });
+}
+</script>
+</body>
+</html>
